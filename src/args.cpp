@@ -45,6 +45,10 @@ using std::endl;
 #  include <sidplayfp/builders/exsid.h>
 #endif
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+#  include <sidplayfp/builders/swinsidsim.h>
+#endif
+
 // Wide-chars are not yet supported here
 #undef SEPARATOR
 #define SEPARATOR "/"
@@ -176,6 +180,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
     int  infile = 0;
     int  i      = 0;
     bool err    = false;
+    bool frequency_set = false;
 
     // parse command line arguments
     while ((i < argc) && (argv[i] != nullptr))
@@ -216,6 +221,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
                 if (argv[i][2] == '\0')
                     err = true;
                 m_engCfg.frequency = (uint_least32_t) atoi (argv[i]+2);
+                frequency_set = true;
             }
 
             // No filter options
@@ -436,6 +442,13 @@ int ConsolePlayer::args(int argc, const char *argv[])
             }
 #endif // HAVE_SIDPLAYFP_BUILDERS_EXSID_H
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+            else if (strcmp (&argv[i][1], "-swinsidsim") == 0)
+            {
+                m_driver.sid    = EMU_SWINSIDSIM;
+            }
+#endif // HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+
             // These are for debug
             else if (strcmp (&argv[i][1], "-none") == 0)
             {
@@ -477,6 +490,14 @@ int ConsolePlayer::args(int argc, const char *argv[])
 
         i++;  // next index
     }
+
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+    if (m_driver.sid==EMU_SWINSIDSIM && frequency_set) {
+      displayError("The SwinSID generates samples at a fixed frequency, you cannot set the frequency yourself!");
+      return -1;
+    }
+    cout << "f" << frequency_set << endl;
+#endif
 
     const char* hvscBase = getenv("HVSC_BASE");
 
@@ -674,6 +695,9 @@ void ConsolePlayer::displayArgs (const char *arg)
         if (hs.availDevices ())
             out << " --exsid      enable exSID support" << endl;
     }
+#endif
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+    out << " --swinsidsim enable SwinSID simulator support" << endl;
 #endif
     out << endl
         << "Home Page: " PACKAGE_URL << endl;

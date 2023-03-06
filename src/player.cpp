@@ -75,6 +75,11 @@ const char ConsolePlayer::HARDSID_ID[] = "HardSID";
 const char ConsolePlayer::EXSID_ID[] = "exSID";
 #endif
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+#   include <sidplayfp/builders/swinsidsim.h>
+const char ConsolePlayer::SWINSIDSIM_ID[] = "SwinSIDsim";
+#endif
+
 #ifdef FEAT_REGS_DUMP_SID
 uint16_t freqTablePal[]
 {
@@ -247,6 +252,12 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
             {
                 m_driver.sid    = EMU_EXSID;
                 m_driver.output = OUT_NULL;
+            }
+#endif
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+            else if (emulation.engine.compare(TEXT("SWINSIDSIM")) == 0)
+            {
+                m_driver.sid    = EMU_SWINSIDSIM;
             }
 #endif
             else if (emulation.engine.compare(TEXT("NONE")) == 0)
@@ -505,6 +516,24 @@ bool ConsolePlayer::createSidEmu (SIDEMUS emu)
     }
 #endif // HAVE_SIDPLAYFP_BUILDERS_EXSID_H
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+    case EMU_SWINSIDSIM:
+    {
+        try
+        {
+            SwinSIDsimBuilder *hs = new SwinSIDsimBuilder( SWINSIDSIM_ID, "swinsid.elf" );
+
+            m_engCfg.sidEmulation = hs;
+            if (!hs->getStatus()) goto createSidEmu_error;
+            hs->create (1/*(m_engine.info ()).maxsids()*/);
+            if (!hs->getStatus()) goto createSidEmu_error;
+            m_engCfg.frequency = hs->getSampleRate();
+            cout << "SwinSID sample rate is " << m_engCfg.frequency << "." << endl;
+        }
+        catch (std::bad_alloc const &ba) {}
+        break;
+    }
+#endif
     default:
         // Emulation Not yet handled
         // This default case results in the default
@@ -559,9 +588,12 @@ bool ConsolePlayer::open (void)
     const SidTuneInfo *tuneInfo = m_tune.getInfo();
     if (!m_track.single)
         m_track.songs = tuneInfo->songs();
-    if (!createOutput(m_driver.output, tuneInfo))
-        return false;
+
+    /* createSidEmu must be called before createOutput because in case of the SwinSIDsim, the
+       sample rate is only known after the SwinSID firmware has been started. */
     if (!createSidEmu(m_driver.sid))
+        return false;
+    if (!createOutput(m_driver.output, tuneInfo))
         return false;
 
     // Configure engine with settings

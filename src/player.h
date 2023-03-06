@@ -68,7 +68,7 @@ typedef enum
     Still allows wav generation */
     EMU_NONE = 0,
     /* The following require a soundcard */
-    EMU_DEFAULT, EMU_RESIDFP, EMU_RESID,
+    EMU_DEFAULT, EMU_RESIDFP, EMU_RESID, EMU_SWINSIDSIM, 
     /* The following should disable the soundcard */
     EMU_HARDSID, EMU_EXSID, EMU_SIDSTATION, EMU_COMMODORE,
     EMU_SIDSYN, EMU_END} SIDEMUS;
@@ -110,6 +110,9 @@ private:
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
     static const char  EXSID_ID[];
+#endif
+#ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
+    static const char  SWINSIDSIM_ID[];
 #endif
 #ifdef HAVE_TSID
     TSID               m_tsid;
