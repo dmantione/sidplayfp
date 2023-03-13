@@ -195,6 +195,7 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
     m_filter.enabled = true;
     m_driver.device  = NULL;
     m_driver.sid     = EMU_RESIDFP;
+    m_driver.fwfile  = NULL;
     m_timer.start    = 0;
     m_timer.length   = 0; // FOREVER
     m_timer.valid    = false;
@@ -521,9 +522,14 @@ bool ConsolePlayer::createSidEmu (SIDEMUS emu)
     {
         try
         {
-            SwinSIDsimBuilder *hs = new SwinSIDsimBuilder( SWINSIDSIM_ID, "swinsid.elf" );
-
+            SwinSIDsimBuilder *hs;
+            std::string fwfile(m_driver.fwfile);
+            if (fwfile.empty())
+                hs = new SwinSIDsimBuilder( SWINSIDSIM_ID, "swinsid.elf" );
+            else
+                hs = new SwinSIDsimBuilder( SWINSIDSIM_ID, fwfile );
             m_engCfg.sidEmulation = hs;
+
             if (!hs->getStatus()) goto createSidEmu_error;
             hs->create (1/*(m_engine.info ()).maxsids()*/);
             if (!hs->getStatus()) goto createSidEmu_error;

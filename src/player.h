@@ -166,6 +166,7 @@ private:
         IAudio*        selected; // Selected Output Driver
         IAudio*        device;   // HW/File Driver
         Audio_Null     null;     // Used for everything
+        const char*    fwfile;
     } m_driver;
 
     struct m_timer_t

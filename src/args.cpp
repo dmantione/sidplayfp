@@ -447,6 +447,11 @@ int ConsolePlayer::args(int argc, const char *argv[])
             {
                 m_driver.sid    = EMU_SWINSIDSIM;
             }
+            else if (strncmp (&argv[i][1], "-fw", 3) == 0)
+            {
+                if (argv[i][4] != '\0')
+                    m_driver.fwfile = &argv[i][4];
+            }
 #endif // HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
 
             // These are for debug
@@ -698,6 +703,7 @@ void ConsolePlayer::displayArgs (const char *arg)
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_SWINSIDSIM_H
     out << " --swinsidsim enable SwinSID simulator support" << endl;
+    out << " --fw[name]   swinsid firmware to use (default swinsid.elf)" << endl;
 #endif
     out << endl
         << "Home Page: " PACKAGE_URL << endl;
